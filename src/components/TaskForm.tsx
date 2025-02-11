@@ -12,41 +12,42 @@ import { Loader2 } from "lucide-react";
 
 export const TaskForm = ({ task, onClose }: { task: Task; onClose: () => void }) => {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<Task>(task);
+  const [formData, setFormData] = useState<Task>({
+    _id: task._id || "", // Ensure `_id` is never undefined
+    name: task.name || "",
+    description: task.description || "",
+    priority: task.priority || "Low",
+    status: task.status || "To Do",
+  });
+  
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Mutations for API calls
+  // ✅ Mutations for API calls
   const taskMutation = useMutation({
     mutationFn: async (updatedTask: Task) =>
       updatedTask._id ? updateTask(updatedTask._id, updatedTask) : createTask(updatedTask),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tasks"]); // Refresh task list
+      queryClient.invalidateQueries(["tasks"]); // ✅ Corrected usage
       onClose(); // Close modal
     },
-    onError: (error) => {
-      console.error("Error saving task:", error);
-      setError("Failed to save task. Try again.");
-    },
-    onSettled: () => setLoading(false),
   });
 
- const handleSubmit = async () => {
-  if (!formData.name.trim() || !formData.description.trim()) {
-    setError("Task name and description are required.");
-    return;
-  }
+  const handleSubmit = async () => {
+    if (!formData.name.trim() || !formData.description.trim()) {
+      setError("Task name and description are required.");
+      return;
+    }
 
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  // Ensure `_id` is only sent for existing tasks
-  const taskToSend = { ...formData };
-  if (!taskToSend._id) delete taskToSend._id; // ✅ Prevents `_id: ""` issue
+    // ✅ Ensure `_id` is only sent for existing tasks
+    const taskToSend = { ...formData };
+    if (!taskToSend._id) delete taskToSend._id; // ✅ Prevents `_id: ""` issue
 
-  taskMutation.mutate(taskToSend);
-};
-
+    taskMutation.mutate(taskToSend);
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -58,11 +59,14 @@ export const TaskForm = ({ task, onClose }: { task: Task; onClose: () => void })
         {/* Error Message */}
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
+        {/* Name Input */}
         <Input
           placeholder="Task Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
+
+        {/* Description Input */}
         <Input
           placeholder="Description"
           value={formData.description}
@@ -70,7 +74,10 @@ export const TaskForm = ({ task, onClose }: { task: Task; onClose: () => void })
         />
 
         {/* Priority Selector */}
-        <Select value={formData.priority} onValueChange={(val) => setFormData({ ...formData, priority: val as Task["priority"] })}>
+        <Select
+          value={formData.priority}
+          onValueChange={(val) => setFormData({ ...formData, priority: val as Task["priority"] })}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select Priority" />
           </SelectTrigger>
@@ -82,7 +89,10 @@ export const TaskForm = ({ task, onClose }: { task: Task; onClose: () => void })
         </Select>
 
         {/* Status Selector */}
-        <Select value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val as Task["status"] })}>
+        <Select
+          value={formData.status}
+          onValueChange={(val) => setFormData({ ...formData, status: val as Task["status"] })}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select Status" />
           </SelectTrigger>

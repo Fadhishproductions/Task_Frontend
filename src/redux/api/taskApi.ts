@@ -3,7 +3,7 @@ import { Task } from "../../types/task";
 
 export const taskApi = createApi({
   reducerPath: "taskApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }), // Change URL as needed
+  baseQuery: fetchBaseQuery({ baseUrl:import.meta.env.VITE_API_URL }), // Change URL as needed
   tagTypes: ["Tasks"], // Helps with cache invalidation
   endpoints: (builder) => ({
    getTasks: builder.query<

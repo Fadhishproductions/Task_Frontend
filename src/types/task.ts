@@ -1,5 +1,5 @@
 export type Task = {
-    _id: string;
+    _id?: string;
     name: string;
     description: string;
     priority: "Low" | "Medium" | "High";
